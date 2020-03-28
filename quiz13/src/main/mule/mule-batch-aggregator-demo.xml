@@ -1,0 +1,134 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns:batch="http://www.mulesoft.org/schema/mule/batch"
+	xmlns:scripting="http://www.mulesoft.org/schema/mule/scripting"
+	xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd 
+http://www.mulesoft.org/schema/mule/batch http://www.mulesoft.org/schema/mule/batch/current/mule-batch.xsd 
+http://www.mulesoft.org/schema/mule/scripting http://www.mulesoft.org/schema/mule/scripting/current/mule-scripting.xsd 
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd">
+
+	<scripting:config name="Scripting_Config" doc:name="Scripting Config" doc:id="4185ca28-b0b0-440b-9a8f-c96f2bbcba89" />
+	<flow name="mule4-batch-demoFlow-agr" doc:id="9fa5180b-823e-411e-978d-40533ac6f706" >
+		<http:listener path="/batch-start-aggr" doc:name="Listener" doc:id="6294ff4a-edde-4dbc-9bea-e4a30539f15f" config-ref="HTTP_Listener_config"/>
+		<ee:transform doc:name="Transform Message" doc:id="3aa5b4d5-8d4d-4352-a91c-befe26ad6a77" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/java
+---
+[
+	{
+		"id": 1,
+		"status": 'Ready',
+		"type": 'CoffeeOrder'
+	},{
+		"id": -1,
+		"status": 'Ready',
+		"type": 'ABCDERTREGDFG'
+	},{
+		"id": -1,
+		"status": 'Ready',
+		"type": 'ABCDERTREGDFG'
+	}
+	
+]]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<batch:job jobName="mule4-batch-demoBatch-aggr_Job" doc:id="2579732e-2fc3-4e23-bb0f-1475b9760368" >
+			<batch:process-records >
+				<batch:step name="Batch_Step_1-aggr" doc:id="e3213354-6ace-4be2-b974-a206a79ef530">
+					<flow-ref name="batch-step-1-process-aggr" doc:name="batch-step-1-process-aggr"/>
+				</batch:step>
+				<batch:step name="Batch_Step_2-aggr" acceptExpression="#[payload.status == 'Processing']"  doc:id="5e0ef98c-5cf2-4e0f-a174-5fe2cadedbdc">
+					<flow-ref doc:name="Flow Reference" doc:id="b76efaf6-6aad-4f91-bd90-a7cbd699a1d6" name="batch-step-2-process-aggr"/>
+					<batch:aggregator doc:name="Batch Aggregator" doc:id="2b3b843e-998c-4f08-a5fa-0db3a56bf177" size="3">
+						<scripting:execute engine="groovy" doc:name="Execute" doc:id="93b475c3-c966-46af-b72b-681b9e1508e9" >
+							<scripting:code >payload[0].status = 'Test'</scripting:code>
+						</scripting:execute>
+					</batch:aggregator>
+				</batch:step>
+				<batch:step name="Batch_Step_3-aggr" doc:id="2fb4b665-c3f6-40a8-a606-5f1ddd2922ce" acceptPolicy="ALL">
+					<flow-ref name="batch-step-3-process-aggr" doc:name="batch-step-3-process-aggr"/>
+				</batch:step>
+			</batch:process-records>
+			<batch:on-complete >
+				<logger level="INFO" doc:name="Logger" doc:id="39c2a729-05c1-470c-b5a4-5e8b6698962f" />
+			</batch:on-complete>
+		</batch:job>
+		<logger doc:name="Logger" message="#['Done']" level="INFO"/>
+	</flow>
+	<flow name="mule4-batch-demoFlow-aggr-streaming" doc:id="34201ab4-1228-4dcf-9efb-51eb704621c3" >
+		<http:listener path="/batch-start-aggr-streaming" doc:name="Listener" doc:id="20db188a-8b92-4d48-8fc6-73cf122a1d57" config-ref="HTTP_Listener_config"/>
+		<ee:transform doc:name="Transform Message" doc:id="554b663e-be7d-4171-b9af-56e87acb6f6e" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/java
+---
+[
+	{
+		"id": 2,
+		"status": 'Ready',
+		"type": 'CoffeeOrder'
+	},{
+		"id": 3,
+		"status": 'Ready',
+		"type": 'ABCDERTREGDFG'
+	},{
+		"id": 4,
+		"status": 'Ready',
+		"type": 'ABCDERTREGDFG'
+	}
+	
+]]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<batch:job jobName="mule4-batch-demoBatch-aggr-streaming_Job" doc:id="7995d3be-f481-48bb-8c65-a66a78abb430" >
+			<batch:process-records >
+				<batch:step name="Batch_Step_1-aggr-streaming" doc:id="597e1125-454f-4b13-a131-6ad6acb1f2e9" acceptPolicy="ALL">
+					<flow-ref name="batch-step-1-process-aggr" doc:name="batch-step-1-process-aggr"/>
+				</batch:step>
+				<batch:step name="Batch_Step_2-aggr-streaming" acceptExpression="#[payload.status == 'Processing']"  doc:id="313697d9-e603-4bc2-83bf-c3116d709a25">
+					<flow-ref doc:name="Flow Reference" doc:id="33061be8-a8dd-487e-b254-43a0c5077f57" name="batch-step-2-process-aggr"/>
+					<batch:aggregator doc:name="Batch Aggregator" doc:id="2d78a042-ef92-4e59-90e3-930030162929" streaming="true">
+						<foreach doc:name="For Each" doc:id="c7283007-eac3-468e-adcc-8d00e82cbb08" >
+							<scripting:execute engine="groovy" doc:name="Execute" doc:id="7f43d865-e29b-4375-909a-51eeefd69617" >
+								<scripting:code >payload.value.status = 'Test'</scripting:code>
+							</scripting:execute>
+						</foreach>
+					</batch:aggregator>
+				</batch:step>
+				<batch:step name="Batch_Step_3-aggr-streaming" doc:id="60e0bb12-1206-40ed-a61f-2c2ac87889bb" acceptPolicy="ALL">
+					<flow-ref name="batch-step-3-process-aggr" doc:name="batch-step-3-process-aggr"/>
+				</batch:step>
+			</batch:process-records>
+			<batch:on-complete >
+				<logger level="INFO" doc:name="Logger" doc:id="261489e0-21c3-4fa7-8d44-41d6f100597f" />
+			</batch:on-complete>
+		</batch:job>
+		<logger doc:name="Logger" message="#['Done']" level="INFO"/>
+	</flow>
+	<sub-flow name="batch-step-1-process-aggr" doc:id="89a26df8-c9a1-4e57-a510-70ee8b405264">
+		<logger message="#['Processing Step 1 with id - ' ++ payload.id]" level="INFO" doc:name="Logger"/>
+		<set-variable variableName="recordId" value="#[payload.id]" doc:name="Set Variable"/>
+		<ee:transform doc:name="Transform Message" doc:id="f39b4f85-e1fd-4ec2-b2b4-c53efd0cd501" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/java
+---
+(payload ++ 
+	(status: if (payload.status == 'Ready') 'Processing' else 'Not-Processing')
+)]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</sub-flow>
+	<sub-flow name="batch-step-2-process-aggr" doc:id="14118565-c1bb-4444-9bab-424123c37132">
+		<logger message="#['Processing Step 2 for id ' ++ payload.id ++ ' with status ' ++ payload.status]" level="INFO" doc:name="Logger"/>
+	</sub-flow>
+	<sub-flow name="batch-step-3-process-aggr" doc:id="842269fb-5297-41cd-ac69-b1f03903675e">
+		<logger message="#['Processing Step 3 for id ' ++ vars.recordId ++ ' with status ' ++ payload.status]" level="INFO" doc:name="Logger"/>
+	</sub-flow>
+</mule>

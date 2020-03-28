@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:validation="http://www.mulesoft.org/schema/mule/validation"
+	xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+	xmlns:batch="http://www.mulesoft.org/schema/mule/batch" xmlns:file="http://www.mulesoft.org/schema/mule/file"
+	xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="
+http://www.mulesoft.org/schema/mule/validation http://www.mulesoft.org/schema/mule/validation/current/mule-validation.xsd 
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/file http://www.mulesoft.org/schema/mule/file/current/mule-file.xsd
+http://www.mulesoft.org/schema/mule/batch http://www.mulesoft.org/schema/mule/batch/current/mule-batch.xsd">
+	<http:listener-config name="HTTP_Listener_config" doc:name="HTTP Listener config" doc:id="8ac641a2-3344-4f22-9af0-288b5efc9870" >
+		<http:listener-connection host="0.0.0.0" port="8081" />
+	</http:listener-config>
+	<flow name="quiz13Flow" doc:id="1ec0ed68-e092-4412-acf9-1af54d40a5ee" >
+		<http:listener doc:name="HTTP. GET" doc:id="fca4892a-4364-4479-a225-1dfba7b0455a" config-ref="HTTP_Listener_config" path="/q1"/>
+		<set-payload value='#[{
+	"account": {
+		
+	},
+	"account": {
+		
+	},
+	"account": {
+		
+	}
+}]' doc:name="Set to Object" doc:id="52b3bc4a-6145-410f-89dd-158f37aa3ce0" />
+		<logger level="INFO" doc:name="Logger" doc:id="f09a749d-d63c-4a67-903c-c1037bb347e2" message="#[sizeOf(payload)]"/>
+		<foreach doc:name="For Each" doc:id="5dd1cec7-9982-4140-aa90-b9b3bf035639" batchSize="2">
+			<file:write doc:name="File: data/account" doc:id="b590f4b2-035f-4c01-a733-36b8ebff0ebb" path='#["Desktop/files/output/account-" ++ random()]'/>
+		</foreach>
+	</flow>
+	<flow name="quiz13Flow1" doc:id="2691a9a8-b4fd-40e9-8ee0-96897987ee36" >
+		<http:listener doc:name="Listener" doc:id="b91be25d-d45c-4838-bb10-7bd3d63da12e" config-ref="HTTP_Listener_config" path="/q2"/>
+		<set-payload value="#[[1,2,3]]" doc:name="123" doc:id="162820c3-edd0-4e95-922c-d146f0c4d3f5" />
+		<set-variable value="#[1]" doc:name="check" doc:id="558b53a2-1c2c-40f7-b452-65be76726f09" variableName="check"/>
+		<batch:job jobName="quiz13Batch_Job" doc:id="fd402b2f-cbb1-453d-9b16-48ef7d9154a6" >
+			<batch:process-records >
+				<batch:step name="Batch_Step" doc:id="e839b115-9471-4c40-be16-3833a33ec1ac" >
+					<set-variable value="#[payload]" doc:name="batchPayload" doc:id="17c76b91-847c-43b7-9e82-6def872deb14" variableName="batchPayload"/>
+					<set-variable value="#[vars.check +10]" doc:name="check++" doc:id="bdeba568-dc03-40f1-bd23-27028a3a3dde" variableName="check"/>
+					<logger level="INFO" doc:name="Logger" doc:id="7910c27a-c09c-4d73-a287-d89f776eec91" message="#[payload]"/>
+				</batch:step>
+				<batch:step name="Batch_Step1" doc:id="080d04ed-75d9-4faa-816b-478e399bc692" >
+					<set-variable value="#[vars.batchPayload + 10]" doc:name="batchStepPayload" doc:id="ea48effd-1a2a-4a5e-baff-3e55ca4e899b" variableName="batchStepPayload"/>
+					<set-payload value="#[vars.batchStepPayload]" doc:name="varsBatchStepPayload" doc:id="af1d1d83-897b-4acb-97a1-6e96785abb3f" />
+					<set-variable value="#[vars.check]" doc:name="stepVar" doc:id="bdf9f788-47af-49a3-8338-f8bf048aab31" variableName="stepVar"/>
+					<logger level="INFO" doc:name="Logger" doc:id="a7fe0cce-6b05-4d32-9be2-dd57c3a5c581" message="#[vars.check]"/>
+				</batch:step>
+			</batch:process-records>
+		</batch:job>
+		<logger level="INFO" doc:name="Logger" doc:id="3954c8ea-a969-4cc8-ba4b-1f0458bbe95b" message="#[vars.check] #[vars.stepVar] #[payload]" />
+	
+	
+	
+	</flow>
+	
+	<flow name="mule4-batch-variablesFlow" doc:id="bc87ead6-c949-427d-a74a-bcf45d9854dc" >
+		<http:listener config-ref="HTTP_Listener_config" path="/batch-variables" doc:name="Listener" doc:id="61dbb7df-f55a-44d7-a034-99084a573bb5" />
+		<ee:transform doc:name="Transform Message" doc:id="d9d69696-e78f-4eae-a5dd-c5750712c6a7" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/java
+---
+(1 to 10) map {
+	id: $,
+	"Name": "Name-" ++ $
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<flow-ref name="mule4-batch-variablesSub_Flow" doc:name="mule4-batch-variablesSub_Flow"/>
+		<set-payload mimeType="text/plain" value="Done" doc:name="Done"/>
+		
+	</flow>
+	
+	<sub-flow name="mule4-batch-variablesSub_Flow" doc:id="bf9199b1-c39c-41d1-aea9-afda09868bf3">
+	
+	<set-variable variableName="commonName" value="Superman" doc:name="Superman" doc:id="ff9c6985-c596-405c-ba8e-3640ef23ef56" />
+		<batch:job jobName="mule4-batch-variablesBatch_Job" doc:id="d014af9a-f5cf-4b9c-9310-d913381abdb4" maxFailedRecords="1" >
+			<batch:process-records >
+				<batch:step name="Batch_Step3" doc:id="310cd509-9927-47fd-880e-b682efbb9252" >
+					<set-variable variableName="recordId" value="#[payload.id]" doc:name="payload.id" doc:id="0f7d2122-03e5-414b-9dc9-817252fe8046" />
+				</batch:step>
+				<batch:step name="Batch_Step4" doc:id="8fe62e8f-17fa-4239-b57d-845e72ad29f4" >
+					<logger level="INFO" doc:name="Logger" doc:id="c357f93b-4d41-4283-828c-a223b53772c4" message="#['Processing Step 1 for ' ++ vars.recordId ++ ' with payload ' ++ payload.Name ++ ' and common name as ' ++ vars.commonName]"/>
+					<validation:is-true doc:name="Is true" doc:id="2afe5bf7-267b-4645-9cff-905a02df6c0d" expression="#[payload.id == vars.recordId]" message="Flow Variable id must match with payload id."/>
+					<validation:is-true doc:name="Is true" doc:id="0110beee-9d46-4b81-b499-805cf13f4678" expression="#[vars.commonName == 'Superman']"/>
+				</batch:step>
+				<batch:step name="Batch_Step5" doc:id="92f44274-506c-4cbc-8c09-d2b4de87f033" >
+					
+					<logger level="INFO" doc:name="Copy_of_Logger" doc:id="cdf43aa1-7195-45c9-940c-905fb7590427" message="#['Processing Step 2 for ' ++ vars.recordId ++ ' with payload ' ++ payload.Name ++ ' and common name as ' ++ vars.commonName]" />
+					<validation:is-true doc:name="Is true" doc:id="e1ca88ee-7911-4c18-bbe6-8b1c2438fc5c" expression="#[payload.id == vars.recordId]" message="Flow Variable id must match with payload id." />
+					<validation:is-true doc:name="Is true" doc:id="13d03112-fd4e-4b7d-aa22-8ac8bb0b4713" expression="#[vars.commonName == 'Superman']"/>
+				</batch:step>
+			</batch:process-records>
+			<batch:on-complete >
+				<logger level="INFO" doc:name="Logger" doc:id="a699b210-1637-49f4-b207-a5ef6ab3e2b6" message="#[payload] + ' ' +  #[vars]"/>
+			</batch:on-complete>
+		</batch:job>
+	</sub-flow>
+	
+</mule>
