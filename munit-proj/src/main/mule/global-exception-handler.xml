@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd">
+	<error-handler name="global-exception-handlerError_Handler" doc:id="84bd0c45-bf7c-4f55-b0ae-f6648c3cd1b3" >
+		<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="ce61ba07-b66b-4896-9545-a0e0314f474e" >
+			<set-variable value="400" doc:name="Http" doc:id="484b8b22-b330-4e02-a73f-ce3f5c5dd7c9" variableName="http"/>
+			<set-variable value="Unknow Error" doc:name="Message" doc:id="ac4948f9-b5c2-4286-aea5-1e3b411ace2c" variableName="message"/>
+			<set-payload value='[vars.http] ++ " " ++ #[vars.message]' doc:name="Payload" doc:id="d9495d3c-5a68-432e-9594-f70b57a3f105" />
+		</on-error-propagate>
+	</error-handler>
+</mule>
